@@ -56,7 +56,7 @@ Octokit.repositories(node['cookbook_pusher']['github_name']).each do |repo|
       break
     end
     
-    Chef::Log.info("pushing " + repo.name)
+    Chef::Log.info("pushing " + repo.name + " as " + name + " into category " + category)
 
     git "#{path}/cookbooks/#{name}" do
       repository repo.clone_url
