@@ -39,6 +39,8 @@ directory "#{path}/cookbooks"
 chef_gem "octokit"
 require 'octokit'
 
+include_recipe 'git'
+
 Octokit.repositories(node['cookbook_pusher']['github_name']).each do |repo|
   if repo.name =~ /^chef-/
     
