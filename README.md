@@ -10,7 +10,7 @@ name your repositories according to your prefix
 e.g. chef-my_cookbook
 
 ##Github Repository Description metadata
-somewhere add the string "Category : foobar" to your description string
+end your repository description with "| Category : my category"
 
 Requirements
 ------------

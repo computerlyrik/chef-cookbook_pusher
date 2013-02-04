@@ -23,13 +23,15 @@ directory path
 #opscode key
 template "#{path}/auth.pem" do
   variables ({ 
-    :authkey => node['cookbook_pusher']['authkey'],
-    :opscode_name => node['cookbook_pusher']['opscode_name']
+    :authkey => node['cookbook_pusher']['authkey']
   })
 end
 
 template "#{path}/knife.rb" do
-  variables ({:path => path})
+  variables ({
+    :path => path,
+    :opscode_name => node['cookbook_pusher']['opscode_name']
+  })
 end
 
 directory "#{path}/cookbooks"
@@ -45,15 +47,15 @@ Octokit.repositories(node['cookbook_pusher']['github_name']).each do |repo|
   if repo.name =~ /^chef-/
     
     if repo.fork 
-      Chef::Log.info(repo.name + "is a fork, not publishing")
-      break
+      Chef::Log.info(repo.name + " is a fork, not publishing")
+      next
     end
     
-    name = repo.name - "chef"
-    category = repo.description match "Category : mycategory"
+    name = repo.name[/chef-(.*)/,1]
+    category = repo.description[/\|\ Category:\ (.*)$/,1]
     if category == nil 
       Chef::Log.warn("no category found for " + repo.name)
-      break
+      next
     end
     
     Chef::Log.info("pushing " + repo.name + " as " + name + " into category " + category)
