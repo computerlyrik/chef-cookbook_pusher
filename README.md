@@ -4,6 +4,8 @@ ter)](https://travis-ci.org/computerlyrik/chef-cookbook_pusher)
 cookbook_pusher Cookbook
 ===============
 
+Code repo: https://github.com/computerlyrik/chef-cookbook_pusher 
+
 alpha 
 
 automagically pushes your github repos to opscode community site
