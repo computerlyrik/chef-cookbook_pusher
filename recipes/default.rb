@@ -65,9 +65,7 @@ Octokit.repositories(node['cookbook_pusher']['github_name']).each do |repo|
       repository repo.clone_url
       action :sync
     end
-    command = "knife cookbook site share #{name} #{category} " +
-      "-c #{path}/knife.rb"
-    execute command do
+    execute "knife cookbook site share #{name} #{category} -c #{path}/knife.rb" do
       action :nothing
       subscribes :run, git["#{path}/cookbooks/#{name}"]
       ignore_failure true
