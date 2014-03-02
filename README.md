@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/computerlyrik/chef-cookbook_pusher.png?branch=mas
+[![Build Status](https://api.travis-ci.org/computerlyrik/chef-cookbook_pusher.png?branch=mas
 ter)](https://travis-ci.org/computerlyrik/chef-cookbook_pusher)
 
 cookbook_pusher Cookbook
