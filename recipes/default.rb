@@ -17,60 +17,61 @@
 # limitations under the License.
 #
 
-path = "/cookbook_pusher"
+path = '/cookbook_pusher'
 directory path
 
-#opscode key
+# opscode key
 template "#{path}/auth.pem" do
-  variables ({ 
-    :authkey => node['cookbook_pusher']['authkey']
-  })
+  variables(
+    authkey: node['cookbook_pusher']['authkey']
+  )
 end
 
 template "#{path}/knife.rb" do
-  variables ({
-    :path => path,
-    :opscode_name => node['cookbook_pusher']['opscode_name']
-  })
+  variables(
+    path: path,
+    opscode_name: node['cookbook_pusher']['opscode_name']
+  )
 end
 
 directory "#{path}/cookbooks"
 
 ############################       automagic
 
-chef_gem "octokit"
+chef_gem 'octokit'
 require 'octokit'
 
 include_recipe 'git'
 
 Octokit.repositories(node['cookbook_pusher']['github_name']).each do |repo|
   if repo.name =~ /^chef-/
-    
-    if repo.fork 
-      Chef::Log.info(repo.name + " is a fork, not publishing")
+
+    if repo.fork
+      Chef::Log.info(repo.name + ' is a fork, not publishing')
       next
     end
-    
-    name = repo.name[/chef-(.*)/,1]
-    category = repo.description[/\|\ Category:\ (.*)$/,1]
-    if category == nil 
-      Chef::Log.warn("no category found for " + repo.name)
+
+    name = repo.name[/chef-(.*)/, 1]
+    category = repo.description[/\|\ Category:\ (.*)$/, 1]
+    if category.nil?
+      Chef::Log.warn('no category found for ' + repo.name)
       next
     end
-    
-    Chef::Log.info("pushing " + repo.name + " as " + name + " into category " + category)
+
+    Chef::Log.info('pushing ' + repo.name + ' as ' + name +
+                    ' into category ' + category)
 
     git "#{path}/cookbooks/#{name}" do
       repository repo.clone_url
       action :sync
     end
-
-    execute "knife cookbook site share #{name} #{category} -c #{path}/knife.rb" do
+    command = "knife cookbook site share #{name} #{category} " +
+      "-c #{path}/knife.rb"
+    execute command do
       action :nothing
-      subscribes :run, resources(:git => "#{path}/cookbooks/#{name}")
+      subscribes :run, git["#{path}/cookbooks/#{name}"]
       ignore_failure true
     end
 
   end
 end
-
