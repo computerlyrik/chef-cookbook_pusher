@@ -17,7 +17,13 @@
 # limitations under the License.
 #
 
-path = '/cookbook_pusher'
+# make path in the userdir, if no run on server
+unless Chef::Config[:solo]
+  path = '/cookbook_pusher'
+else
+  path = "#{node['cookbook_pusher']['solo_dir']}/cookbook_pusher"
+end
+
 directory path
 
 # opscode key
@@ -64,12 +70,12 @@ Octokit.repositories(node['cookbook_pusher']['github_name']).each do |repo|
     git "#{path}/cookbooks/#{name}" do
       repository repo.clone_url
       action :sync
+      notifies :run,"execute[upload_#{name}]", :immediately
     end
-    execute "knife cookbook site share #{name} #{category} -c #{path}/knife.rb" do
+    execute "upload_#{name}" do
+      command "knife cookbook site share #{name} #{category} -c #{path}/knife.rb"
       action :nothing
-      subscribes :run, git["#{path}/cookbooks/#{name}"]
       ignore_failure true
     end
-
   end
 end

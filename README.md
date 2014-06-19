@@ -66,6 +66,31 @@ Usage
 
 Just include `cookbook_pusher` in your node's `run_list`:
 
+#### Run with chef-solo
+add a cookbook-pusher.rb
+```ruby
+root = File.absolute_path(File.dirname(__FILE__))
+
+file_cache_path root
+cookbook_path root + '/cookbooks'
+```
+
+add a cookbook-pusher.json
+```json
+{ 
+  "run_list": [ "recipe[cookbook_pusher]" ],
+  "cookbook_pusher": 
+  {
+    "solo_dir": "/path/to/writable/dir",
+    "github_name": "myGithubAccountName",
+    "opscode_name": "myOpscodeAccountName",
+    "authkey": "-----BEGIN RSA PRIVATE KEY----- YOUR_OPSCODE_KEY -----END RSA PRIVATE KEY-----\n"
+  }
+}
+```
+make sure you converted your auth key line breaks!
+
+```cat auth.pem | sed s/$/\\\\n/ | tr -d '\n'```
 
 Contributing
 ------------
