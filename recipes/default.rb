@@ -44,16 +44,21 @@ directory "#{path}/cookbooks"
 
 ############################       automagic
 
-chef_gem 'octokit'
+chef_gem 'octokit' do
+  compile_time false if respond_to?(:compile_time)
+end
 require 'octokit'
 
 include_recipe 'git'
 
-Octokit.repositories(node['cookbook_pusher']['github_name']).each do |repo|
+Octokit.search_repositories("chef+user:#{node['cookbook_pusher']['github_name']}").items.each do |repo|
+
+  Chef::Log.info('processing '+repo.name)
+
   if repo.name =~ /^chef-/
 
     if repo.fork
-      Chef::Log.info(repo.name + ' is a fork, not publishing')
+      Chef::Log.warn(repo.name + ' is a fork, not publishing')
       next
     end
 
@@ -64,7 +69,7 @@ Octokit.repositories(node['cookbook_pusher']['github_name']).each do |repo|
       next
     end
 
-    Chef::Log.info('pushing ' + repo.name + ' as ' + name +
+    Chef::Log.info('sharing ' + repo.name + ' as ' + name +
                     ' into category ' + category)
 
     git "#{path}/cookbooks/#{name}" do
@@ -72,6 +77,7 @@ Octokit.repositories(node['cookbook_pusher']['github_name']).each do |repo|
       action :sync
       notifies :run,"execute[upload_#{name}]", :immediately
     end
+    Chef::Log.info("knife cookbook site share #{name} #{category} -c #{path}/knife.rb")
     execute "upload_#{name}" do
       command "knife cookbook site share #{name} #{category} -c #{path}/knife.rb"
       action :nothing
