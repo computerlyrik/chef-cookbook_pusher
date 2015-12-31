@@ -18,11 +18,14 @@
 #
 
 # make path in the userdir, if no run on server
+
 unless Chef::Config[:solo]
   path = '/cookbook_pusher'
 else
   path = "#{node['cookbook_pusher']['solo_dir']}/cookbook_pusher"
 end
+
+node.set['cookbook_pusher']['path'] = path
 
 directory path
 
@@ -44,44 +47,12 @@ directory "#{path}/cookbooks"
 
 ############################       automagic
 
+include_recipe 'git'
+
 chef_gem 'octokit' do
   compile_time false if respond_to?(:compile_time)
 end
-require 'octokit'
 
-include_recipe 'git'
+Chef::Recipe.send(:include, RepositoryHelper)
+push("#{node['cookbook_pusher']['prefix']}+user:#{node['cookbook_pusher']['github_name']}")
 
-Octokit.search_repositories("#{node['cookbook_pusher']['prefix']}+user:#{node['cookbook_pusher']['github_name']}").items.each do |repo|
-
-  Chef::Log.info('processing '+repo.name)
-
-  if repo.name =~ /^chef-/
-
-    if repo.fork
-      Chef::Log.warn(repo.name + ' is a fork, not publishing')
-      next
-    end
-
-    name = repo.name[/chef-(.*)/, 1]
-    category = repo.description[/\|\ Category:\ (.*)$/, 1]
-    if category.nil?
-      Chef::Log.warn('no category found for ' + repo.name)
-      next
-    end
-
-    Chef::Log.info('sharing ' + repo.name + ' as ' + name +
-                    ' into category ' + category)
-
-    git "#{path}/cookbooks/#{name}" do
-      repository repo.clone_url
-      action :sync
-      notifies :run,"execute[upload_#{name}]", :immediately
-    end
-    Chef::Log.info("knife cookbook site share #{name} #{category} -c #{path}/knife.rb")
-    execute "upload_#{name}" do
-      command "knife cookbook site share #{name} #{category} -c #{path}/knife.rb"
-      action :nothing
-      ignore_failure true
-    end
-  end
-end
