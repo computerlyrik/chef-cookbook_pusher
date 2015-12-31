@@ -51,7 +51,7 @@ require 'octokit'
 
 include_recipe 'git'
 
-Octokit.search_repositories("chef+user:#{node['cookbook_pusher']['github_name']}").items.each do |repo|
+Octokit.search_repositories("#{node['cookbook_pusher']['prefix']}+user:#{node['cookbook_pusher']['github_name']}").items.each do |repo|
 
   Chef::Log.info('processing '+repo.name)
 
