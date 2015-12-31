@@ -40,7 +40,7 @@ module RepositoryHelper
   def push(query)
     response = Octokit.search_repositories(query)
     loop do 
-      Chef::Log.info(Octokit.last_response)
+      #Chef::Log.info(Octokit.last_response)
       process_repositories(response.items, node['cookbook_pusher']['path'])
       break if response.rels[:next].nil?
       response = response.rels[:next].get
